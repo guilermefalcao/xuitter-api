@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xuitter - Feed</title>
+    <style>
+        /* Reset básico e configuração geral */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #15202b;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Cabeçalho */
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1da1f2;
+            font-size: 32px;
+        }
+
+        /* Card de cada xuit */
+        .xuit-card {
+            background-color: #192734;
+            border: 1px solid #38444d;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .xuit-card:hover {
+            background-color: #1c2938;
+        }
+
+        /* Cabeçalho do xuit (autor) */
+        .xuit-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .author-name {
+            font-weight: bold;
+            color: #ffffff;
+            margin-right: 8px;
+        }
+
+        .username {
+            color: #8899a6;
+        }
+
+        /* Conteúdo do xuit */
+        .xuit-content {
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            color: #ffffff;
+        }
+
+        /* Rodapé do xuit (tipo) */
+        .xuit-footer {
+            display: flex;
+            align-items: center;
+            color: #8899a6;
+            font-size: 14px;
+        }
+
+        .xuit-type {
+            background-color: #1da1f2;
+            color: #ffffff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            color: #8899a6;
+            padding: 40px;
+        }
+
+        /* Erro */
+        .error {
+            background-color: #f91880;
+            color: #ffffff;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Container principal -->
+    <div class="container">
+        <!-- Título da página -->
+        <h1>🐦 Xuitter Feed</h1>
+        
+        <!-- Div onde os xuits serão exibidos -->
+        <div id="feed">
+            <div class="loading">Carregando xuits...</div>
+        </div>
+    </div>
+
+    <script>
+        // Função para buscar xuits da API
+        async function loadFeed() {
+            try {
+                // 1. Faz requisição GET para a API
+                const response = await fetch('http://localhost:8080/feed');
+                
+                // 2. Verifica se a resposta foi bem-sucedida
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar feed');
+                }
+                
+                // 3. Converte resposta para JSON
+                const xuits = await response.json();
+                
+                // 4. Renderiza os xuits na página
+                renderFeed(xuits);
+                
+            } catch (error) {
+                // 5. Exibe mensagem de erro se algo der errado
+                document.getElementById('feed').innerHTML = `
+                    <div class="error">
+                        ❌ Erro ao carregar feed: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        // Função para renderizar os xuits no HTML
+        function renderFeed(xuits) {
+            const feedDiv = document.getElementById('feed');
+            
+            // Se não houver xuits, exibe mensagem
+            if (xuits.length === 0) {
+                feedDiv.innerHTML = '<div class="loading">Nenhum xuit encontrado</div>';
+                return;
+            }
+            
+            // Cria HTML para cada xuit
+            const xuitsHTML = xuits.map(xuit => `
+                <div class="xuit-card">
+                    <!-- Cabeçalho com autor -->
+                    <div class="xuit-header">
+                        <span class="author-name">${xuit.authorUsername}</span>
+                        <span class="username">@${xuit.authorUsername}</span>
+                    </div>
+                    
+                    <!-- Conteúdo do xuit -->
+                    <div class="xuit-content">
+                        ${xuit.content}
+                    </div>
+                    
+                    <!-- Rodapé com tipo -->
+                    <div class="xuit-footer">
+                        <span class="xuit-type">${xuit.type}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Insere os xuits no DOM
+            feedDiv.innerHTML = xuitsHTML;
+        }
+
+        // Carrega o feed quando a página terminar de carregar
+        window.addEventListener('DOMContentLoaded', loadFeed);
+    </script>
+</body>
+</html>
